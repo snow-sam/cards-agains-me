@@ -1,101 +1,128 @@
-import Image from "next/image";
+'use client'
+
+import { usePlayerSocket } from '@/hooks/usePlayerSocket'
+import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { ArrowUp, Check, ChevronLeft, ChevronRight, Hourglass } from "lucide-react"
+import toast from 'react-hot-toast'
+
+const DrawerTest = ({ deck, sendCard }: { deck: string[], sendCard: (card: string) => void }) => {
+  const [selected, setSelected] = useState("")
+
+  return (
+    <>
+      {selected && <Check onClick={() => sendCard(selected)} className='z-10 cursor-pointer bg-white text-green-500 p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute bottom-8 left-1/2 -translate-x-1/2' />}
+      <Drawer>
+        <DrawerTrigger>
+          {!selected && <ArrowUp className='z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute bottom-8 left-1/2 -translate-x-1/2' />}
+          {selected && <span className='left-1/2 -translate-x-1/2 bottom-0 translate-y-1/4 text-start text-sm md:text-base rounded-xl p-4 font-semibold border border-neutral-300 bg-neutral-50 text-neutral-800 absolute h-[300px] w-[200px]'>{selected}</span>}
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Qual atrocidade você dirá hoje?</DrawerTitle>
+            <DrawerDescription>Relaxa, o pior que pode acontecer é a Policia Federal descobrir ;)</DrawerDescription>
+          </DrawerHeader>
+          <ScrollArea className='h-[400px]'>
+            <ul className='grid grid-cols-2 px-4 gap-4'>
+              {deck?.map((card, key) => (
+                <DrawerClose key={key}>
+                  <li onClick={() => setSelected(card)} className='cursor-pointer select-none border border-neutral-300 h-28 text-start text-xs md:text-sm p-4 rounded shadow'>{card}</li>
+                </DrawerClose>
+              ))}
+            </ul>
+          </ScrollArea>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button className='md:py-6'>Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
+  )
+}
+
+const VotingSection = ({votingMap, voteFnc}: {votingMap: object, voteFnc: (card: string) => void}) => {
+  const [index, setIndex] = useState(0)
+  const cards = Object.entries(votingMap).map(([card, {author}]) => ({card, author}))
+
+  const nextCard = () => setIndex(index !== cards.length-1 ? index+1 : 0)
+  const previousCard = () => setIndex(index !== 0 ? index-1 : cards.length-1)
+  return (
+      <div className='select-none'>
+        {cards[index] && 
+        <span className='bottom-12 right-1/2 translate-x-1/2 text-start text-sm md:text-base rounded-xl p-4 font-semibold border border-neutral-300 bg-neutral-50 text-neutral-800 absolute h-[300px] w-[200px]'>
+          {cards[index].card}
+          <p className="absolute bottom-4 text-sm font-normal italic right-4">- {cards[index].author}</p>
+        </span>
+        }
+        {!cards[index] && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2'/>}
+        <ChevronLeft onClick={previousCard} className='md:left-[calc(50%_-_150px)] md:-translate-x-1/2 md:bottom-1/3 left-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute'/>
+        <ChevronRight onClick={nextCard} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-1/3 right-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute'/>
+        <Check onClick={() => voteFnc(cards[index].card)} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-28 bottom-12 right-8 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute text-green-500'/>
+      </div>
+  )
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const params = useSearchParams()
+  const id = params.get("id")
+  const room = params.get("room")
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+  const [question, setQuestion] = useState('')
+  const [cards, setCards] = useState<string[]>([])
+  const [votingFase, setVotingFase] = useState({})
+  const [hasSended, setHasSended] = useState(false)
+
+  const socket = usePlayerSocket({ query: { roomId: room, id: id } });
+
+  const sendCard = (card: string) => {
+    setHasSended(true)
+    socket.emit("sendCard", id, card)
+  }
+
+  const voteCard = (card: string) => {
+    setQuestion('')
+    setCards([])
+    setHasSended(false)
+    socket.emit("vote", id, card)
+  }
+
+  const showWinner = (winners: string[][]) => {
+    winners.forEach(([card, author]) => {
+      toast.success(`${author}, com: ${card}`, {position: 'bottom-center'})
+    })
+  }
+
+  useEffect(() => {
+    socket?.on("newRound", (question: string) => {
+      setQuestion(question)
+      socket?.emit("getCards", room, id, setCards)
+    })
+    socket?.on("votingFase", setVotingFase)
+    socket?.on("winner", showWinner)
+    return () => { socket?.emit("unregister", id) }
+  }, [socket, id, room])
+
+  return (
+    <main className="w-full h-[100dvh] bg-neutral-200 text-black">
+      <span className='whitespace-pre-line select-none left-1/2 -translate-x-1/2 shadow-lg top-6 text-sm md:text-base rounded-xl p-4 font-semibold bg-neutral-900 text-neutral-200 absolute h-[300px] w-[200px]'>{question}</span>
+      {!question && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2'/>}
+      {!hasSended && <DrawerTest deck={cards} sendCard={sendCard} />}
+      {hasSended && <VotingSection voteFnc={voteCard} votingMap={votingFase}/>}
+    </main>
+  )
 }
