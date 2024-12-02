@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function CardWithForm() {
+const CardWithForm = () => {
   return (
     <Card>
       <CardHeader>

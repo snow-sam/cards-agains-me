@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
+import { Suspense } from 'react'
 
 const montserrat = Montserrat({
   subsets: ['latin'], // Ajuste conforme necessário, ex: 'latin-ext' para suporte estendido.
@@ -24,8 +25,10 @@ export default function RootLayout({
       <body
         className={`${montserrat.className} antialiased`}
       >
-        {children}
-        <Toaster/>
+        <Suspense>
+          {children}
+        </Suspense>
+        <Toaster />
       </body>
     </html>
   );

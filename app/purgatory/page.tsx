@@ -55,25 +55,25 @@ const DrawerTest = ({ deck, sendCard }: { deck: string[], sendCard: (card: strin
   )
 }
 
-const VotingSection = ({votingMap, voteFnc}: {votingMap: object, voteFnc: (card: string) => void}) => {
+const VotingSection = ({ votingMap, voteFnc }: { votingMap: object, voteFnc: (card: string) => void }) => {
   const [index, setIndex] = useState(0)
-  const cards = Object.entries(votingMap).map(([card, {author}]) => ({card, author}))
+  const cards = Object.entries(votingMap).map(([card, { author }]) => ({ card, author }))
 
-  const nextCard = () => setIndex(index !== cards.length-1 ? index+1 : 0)
-  const previousCard = () => setIndex(index !== 0 ? index-1 : cards.length-1)
+  const nextCard = () => setIndex(index !== cards.length - 1 ? index + 1 : 0)
+  const previousCard = () => setIndex(index !== 0 ? index - 1 : cards.length - 1)
   return (
-      <div className='select-none'>
-        {cards[index] && 
+    <div className='select-none'>
+      {cards[index] &&
         <span className='bottom-12 right-1/2 translate-x-1/2 text-start text-sm md:text-base rounded-xl p-4 font-semibold border border-neutral-300 bg-neutral-50 text-neutral-800 absolute h-[300px] w-[200px]'>
           {cards[index].card}
           <p className="absolute bottom-4 text-sm font-normal italic right-4">- {cards[index].author}</p>
         </span>
-        }
-        {!cards[index] && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2'/>}
-        <ChevronLeft onClick={previousCard} className='md:left-[calc(50%_-_150px)] md:-translate-x-1/2 md:bottom-1/3 left-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute'/>
-        <ChevronRight onClick={nextCard} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-1/3 right-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute'/>
-        <Check onClick={() => voteFnc(cards[index].card)} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-28 bottom-12 right-8 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute text-green-500'/>
-      </div>
+      }
+      {!cards[index] && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2' />}
+      <ChevronLeft onClick={previousCard} className='md:left-[calc(50%_-_150px)] md:-translate-x-1/2 md:bottom-1/3 left-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute' />
+      <ChevronRight onClick={nextCard} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-1/3 right-8 bottom-1/2 translate-y-1/2 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute' />
+      <Check onClick={() => voteFnc(cards[index].card)} className='md:right-[calc(50%_-_150px)] md:translate-x-1/2 md:bottom-28 bottom-12 right-8 cursor-pointer z-10 bg-white p-3 size-12 rounded-full border border-neutral-300 shadow-sm absolute text-green-500' />
+    </div>
   )
 }
 
@@ -91,19 +91,19 @@ export default function Home() {
 
   const sendCard = (card: string) => {
     setHasSended(true)
-    socket.emit("sendCard", id, card)
+    socket?.emit("sendCard", id, card)
   }
 
   const voteCard = (card: string) => {
     setQuestion('')
     setCards([])
     setHasSended(false)
-    socket.emit("vote", id, card)
+    socket?.emit("vote", id, card)
   }
 
   const showWinner = (winners: string[][]) => {
     winners.forEach(([card, author]) => {
-      toast.success(`${author} venceu com: "${card}"`, {position: 'bottom-center'})
+      toast.success(`${author} venceu com: "${card}"`, { position: 'bottom-center' })
     })
   }
 
@@ -118,11 +118,11 @@ export default function Home() {
   }, [socket, id, room])
 
   return (
-    <main className="w-full h-[100dvh] bg-neutral-200 text-black">
-      <span className='whitespace-pre-line select-none left-1/2 -translate-x-1/2 shadow-lg top-6 text-sm md:text-base rounded-xl p-4 font-semibold bg-neutral-900 text-neutral-200 absolute h-[300px] w-[200px]'>{question}</span>
-      {!question && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2'/>}
-      {!hasSended && <DrawerTest deck={cards} sendCard={sendCard} />}
-      {hasSended && <VotingSection voteFnc={voteCard} votingMap={votingFase}/>}
-    </main>
+      <main className="w-full h-[100dvh] bg-neutral-200 text-black">
+        <span className='whitespace-pre-line select-none left-1/2 -translate-x-1/2 shadow-lg top-6 text-sm md:text-base rounded-xl p-4 font-semibold bg-neutral-900 text-neutral-200 absolute h-[300px] w-[200px]'>{question}</span>
+        {!question && <Hourglass className='size-16 animate-pulse text-slate-400 absolute right-1/2 translate-x-1/2 bottom-1/4 -translate-y-1/2' />}
+        {!hasSended && <DrawerTest deck={cards} sendCard={sendCard} />}
+        {hasSended && <VotingSection voteFnc={voteCard} votingMap={votingFase} />}
+      </main>
   )
 }
